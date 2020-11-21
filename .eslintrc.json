@@ -39,6 +39,7 @@
       "react/jsx-props-no-spreading": "off",
       "object-curly-newline": "off",
       "no-unused-vars": "off",
+      "arrow-parens":"off",
       "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
       "import/extensions": [
         "error",
