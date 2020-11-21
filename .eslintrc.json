@@ -38,6 +38,8 @@
       "@typescript-eslint/no-unused-vars": "off",
       "react/jsx-props-no-spreading": "off",
       "object-curly-newline": "off",
+      "implicit-arrow-linebreak":"off",
+      "operator-linebreak":"off",
       "no-unused-vars": "off",
       "arrow-parens":"off",
       "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
