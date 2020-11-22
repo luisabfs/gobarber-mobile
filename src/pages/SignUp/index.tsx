@@ -5,7 +5,9 @@ import {
   Platform,
   ScrollView,
   TextInput,
+  Alert,
 } from 'react-native';
+import * as Yup from 'yup';
 
 import { useNavigation } from '@react-navigation/native';
 import { FormHandles } from '@unform/core';
@@ -17,12 +19,20 @@ import { Input, Button } from '../../components';
 
 import logo from '../../assets/logo.png';
 
+import getValidationErrors from '../../utils/getValidationErrors';
+
 import {
   Container,
   Title,
   BackToSignInButton,
   BackToSignInText,
 } from './styles';
+
+interface SignUpFormData {
+  name: string;
+  email: string;
+  password: string;
+}
 
 const SignUp: React.FC = () => {
   const navigation = useNavigation();
@@ -31,7 +41,35 @@ const SignUp: React.FC = () => {
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
-  const handleSubmit = useCallback(data => console.log(data), []);
+  const handleSubmit = useCallback(async (data: SignUpFormData) => {
+    try {
+      formRef.current?.setErrors({});
+
+      const schema = Yup.object().shape({
+        name: Yup.string().required('Name is required.'),
+        email: Yup.string()
+          .email('Insert a valid email.')
+          .required('Email is required.'),
+        password: Yup.string()
+          .min(6, 'Minimum of 6 digits.')
+          .required('Password is required.'),
+      });
+
+      await schema.validate(data, { abortEarly: false });
+
+      // await api.post('/users', data);
+    } catch (error) {
+      if (error instanceof Yup.ValidationError) {
+        const errors = getValidationErrors(error);
+
+        formRef.current?.setErrors(errors);
+
+        return;
+      }
+
+      Alert.alert('Registration error.', 'Error signing up. Please try again.');
+    }
+  }, []);
   return (
     <>
       <KeyboardAvoidingView
@@ -72,6 +110,7 @@ const SignUp: React.FC = () => {
                   passwordInputRef.current?.focus();
                 }}
               />
+
               <Input
                 ref={passwordInputRef}
                 icon="lock"
@@ -79,7 +118,6 @@ const SignUp: React.FC = () => {
                 secureTextEntry
                 returnKeyType="send"
                 placeholder="Password"
-                textContentType="newPassword"
                 onSubmitEditing={() => formRef.current?.submitForm()}
               />
 
