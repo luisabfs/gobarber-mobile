@@ -17,6 +17,8 @@ import Icon from 'react-native-vector-icons/Feather';
 
 import { Input, Button } from '../../components';
 
+import api from '../../services/api';
+
 import logo from '../../assets/logo.png';
 
 import getValidationErrors from '../../utils/getValidationErrors';
@@ -41,35 +43,47 @@ const SignUp: React.FC = () => {
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
-  const handleSubmit = useCallback(async (data: SignUpFormData) => {
-    try {
-      formRef.current?.setErrors({});
+  const handleSubmit = useCallback(
+    async (data: SignUpFormData) => {
+      try {
+        formRef.current?.setErrors({});
 
-      const schema = Yup.object().shape({
-        name: Yup.string().required('Name is required.'),
-        email: Yup.string()
-          .email('Insert a valid email.')
-          .required('Email is required.'),
-        password: Yup.string()
-          .min(6, 'Minimum of 6 digits.')
-          .required('Password is required.'),
-      });
+        const schema = Yup.object().shape({
+          name: Yup.string().required('Name is required.'),
+          email: Yup.string()
+            .email('Insert a valid email.')
+            .required('Email is required.'),
+          password: Yup.string()
+            .min(6, 'Minimum of 6 digits.')
+            .required('Password is required.'),
+        });
 
-      await schema.validate(data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false });
 
-      // await api.post('/users', data);
-    } catch (error) {
-      if (error instanceof Yup.ValidationError) {
-        const errors = getValidationErrors(error);
+        await api.post('/users', data);
 
-        formRef.current?.setErrors(errors);
+        Alert.alert(
+          'Successfully registered!',
+          'You can log in the application now.',
+        );
+        navigation.goBack();
+      } catch (error) {
+        if (error instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(error);
 
-        return;
+          formRef.current?.setErrors(errors);
+
+          return;
+        }
+
+        Alert.alert(
+          'Registration error.',
+          'Error signing up. Please try again.',
+        );
       }
-
-      Alert.alert('Registration error.', 'Error signing up. Please try again.');
-    }
-  }, []);
+    },
+    [navigation],
+  );
   return (
     <>
       <KeyboardAvoidingView
