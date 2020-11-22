@@ -19,6 +19,8 @@ import { Input, Button } from '../../components';
 
 import logo from '../../assets/logo.png';
 
+import { useAuth } from '../../hooks/auth';
+
 import getValidationErrors from '../../utils/getValidationErrors';
 
 import {
@@ -38,39 +40,44 @@ interface SignInFormData {
 const SignIn: React.FC = () => {
   const navigation = useNavigation();
 
+  const { signIn } = useAuth();
+
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
-  const handleSubmit = useCallback(async (data: SignInFormData) => {
-    try {
-      formRef.current?.setErrors({});
+  const handleSubmit = useCallback(
+    async (data: SignInFormData) => {
+      try {
+        formRef.current?.setErrors({});
 
-      const schema = Yup.object().shape({
-        email: Yup.string()
-          .email('Insert a valid email.')
-          .required('Email is required.'),
-        password: Yup.string().required('Password is required.'),
-      });
+        const schema = Yup.object().shape({
+          email: Yup.string()
+            .email('Insert a valid email.')
+            .required('Email is required.'),
+          password: Yup.string().required('Password is required.'),
+        });
 
-      await schema.validate(data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false });
 
-      // await signIn({
-      //   email: data.email,
-      //   password: data.password,
-      // });
-    } catch (error) {
-      if (error instanceof Yup.ValidationError) {
-        const errors = getValidationErrors(error);
+        await signIn({
+          email: data.email,
+          password: data.password,
+        });
+      } catch (error) {
+        if (error instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(error);
 
-        formRef.current?.setErrors(errors);
+          formRef.current?.setErrors(errors);
+        }
+
+        Alert.alert(
+          'Authentication error',
+          'Error longing in. Check your crendentials.',
+        );
       }
-
-      Alert.alert(
-        'Authentication error',
-        'Error longing in. Check your crendentials.',
-      );
-    }
-  }, []);
+    },
+    [signIn],
+  );
   return (
     <>
       <KeyboardAvoidingView
